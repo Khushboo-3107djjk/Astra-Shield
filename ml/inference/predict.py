@@ -112,7 +112,7 @@ class DisasterAnalyzer:
             
             # Step 1: Load and preprocess image
             print("  [1/4] Preprocessing image...")
-            image, original = self.preprocessor.preprocess(
+            image, _, original = self.preprocessor.preprocess(
                 image_path,
                 return_original=True
             )

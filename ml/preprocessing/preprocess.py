@@ -71,7 +71,7 @@ class SatelliteImagePreprocessor:
         """Resize image to target size"""
         if size is None:
             size = self.img_size
-        return cv2.resize(image, (size, size), interpolation=cv2.INTER_BILINEAR)
+        return cv2.resize(image, (size, size), interpolation=cv2.INTER_LINEAR)
     
     def normalize_image(self, image):
         """Normalize image to [0, 1] range"""

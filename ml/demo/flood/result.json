@@ -1,0 +1,26 @@
+{
+  "success": true,
+  "timestamp": "2026-08-18T12:50:03.080171",
+  "image_path": "C:\\Users\\Khushboo\\OneDrive\\Desktop\\ISRO -PROJECT\\Astra-Shield\\ml\\demo\\flood\\before.png",
+  "classification": {
+    "disaster_type": "landslide",
+    "confidence": 0.340829461812973,
+    "predictions": {
+      "normal": 0.32201075553894043,
+      "flood": 0.1751304715871811,
+      "wildfire": 0.16202926635742188,
+      "landslide": 0.340829461812973
+    }
+  },
+  "segmentation": {
+    "affected_area_km2": 0.0,
+    "severity_score": 0.0,
+    "confidence": 0.4750578701496124,
+    "mask": "iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAAAAADRE4smAAAEFUlEQVR4Ae3BAQEAAACCIP1/uiEGcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaXJpcmlyaQM/eAIBNGo+rQAAAABJRU5ErkJggg=="
+  },
+  "metrics": {
+    "affected_pixels": 0,
+    "total_pixels": 262144,
+    "affected_percentage": 0.0
+  }
+}
