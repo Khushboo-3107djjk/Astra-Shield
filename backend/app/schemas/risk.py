@@ -1,12 +1,11 @@
 from pydantic import BaseModel, Field
 from typing import Dict
-from app.schemas.zone import ZonePriority
 
 
 class RiskSummary(BaseModel):
     """Summary of the overall risk assessment."""
     overall_risk_score: float = Field(..., ge=0, le=10, description="Overall calculated risk score (0-10)")
-    overall_priority: ZonePriority = Field(..., description="Overall priority level for emergency response")
+    overall_priority: str = Field(..., description="Overall priority level (LOW/MODERATE/HIGH/VERY_HIGH/CRITICAL)")
 
 
 # ──────────────────────────────────────────────────────────────────────────────

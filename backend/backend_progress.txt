@@ -284,7 +284,130 @@ Files Created/Modified:
 
 ==================================================
 
+PART 5B — ZONE-LEVEL RISK ANALYSIS
+Status: COMPLETED
+
+Implemented:
+- Deterministic regular-grid zone generation
+- Configurable grid dimensions (default: 4 rows × 4 columns)
+- Flood intersection filtering (only cells intersecting flood)
+- Partially intersecting cells retained as full grid cells
+- Zone flood severity calculation (intersection area / zone area)
+- Building exposure per zone (affected / total buildings in zone)
+- Road disruption per zone (affected_length / total_length in zone)
+- Critical facility exposure per zone (affected / total facilities in zone)
+- Integration with existing risk_service.py (no formula duplication)
+- Zone risk scores (0-10 scale, same weights as overall risk)
+- Zone priorities (LOW/MODERATE/HIGH/VERY_HIGH/CRITICAL)
+- Explainable zone risk breakdown (factor values, weights, contributions)
+- Highest-risk zone identification and sorting
+- Deterministic zone ordering (row-major, Z001, Z002, etc.)
+- Zone-level impact counts (affected buildings, roads, facilities)
+- Zone development endpoint: POST /api/risk/zones
+- Zone Pydantic schema updates
+- Fixed circular import between risk.py and zone.py
+
+Zone Generation Strategy:
+- Regular deterministic grid over flood bounding box
+- Cells retained if they intersect flood polygon
+- Zone geometry is full grid cell (not clipped to flood)
+- Grid cells ordered left-to-right, top-to-bottom
+- Zone IDs deterministic: Z001, Z002, etc.
+
+Zone-Level Metrics:
+- Flood severity: (zone ∩ flood) / zone_area (uses EPSG:6933 projection)
+- Building exposure: affected_buildings / total_buildings_in_zone (0 if none)
+- Road disruption: affected_length_km / total_length_km_in_zone (0 if none)
+- Facility exposure: affected_facilities / total_facilities_in_zone (0 if none)
+
+Risk Calculation:
+- Each zone receives the same RiskInput schema
+- Calls existing risk_service.calculate_risk() 
+- Reuses weights, thresholds, and priority logic
+- Single source of truth for risk calculation
+- Complete risk breakdown included per zone
+
+Zone Output Fields:
+- zone_id: Deterministic identifier (Z001, Z002, etc.)
+- geometry: Polygon GeoJSON (full grid cell)
+- flood_severity: Normalized [0, 1]
+- building_exposure: Normalized [0, 1]
+- road_disruption: Normalized [0, 1]
+- critical_facility_exposure: Normalized [0, 1]
+- risk_score: 0-10 scale
+- priority: LOW/MODERATE/HIGH/VERY_HIGH/CRITICAL
+- risk_breakdown: Per-factor contributions and weights
+- affected_buildings: Integer count
+- affected_road_length_km: Float value
+- affected_facilities: Integer count
+
+API Endpoint:
+- POST /api/risk/zones
+- Development endpoint (uses synthetic test data)
+- Returns: zones (sorted by risk_score desc), total_zones, highest_risk info
+- Clearly marked as development use only
+
+Test Results:
+- Zone service tests: 18 tests passed
+  * Zone generation from flood geometry
+  * Deterministic zone IDs on re-run
+  * Outside cells excluded
+  * Zone geometry validation (valid Polygons)
+  * Flood severity range [0, 1]
+  * Building exposure range [0, 1]
+  * Road disruption range [0, 1]
+  * Facility exposure range [0, 1]
+  * Zero-building zone handling (returns 0)
+  * Zero-road zone handling (returns 0)
+  * Zero-facility zone handling (returns 0)
+  * Risk engine integration (no formula duplication)
+  * Zone priority matches risk engine output
+  * Zone risk breakdown structure validation
+  * Highest-risk zone ordering (descending by score)
+  * CRS handling (different CRS compatibility)
+  * Empty flood geometry handling (returns 0 zones)
+  * API endpoint structure and response validation
+
+Full Backend Test Suite:
+- Total tests passed: 94/94 (100%)
+- Building service tests: 9 passed
+- Geospatial service tests: 7 passed
+- Health tests: 2 passed
+- Infrastructure service tests: 11 passed
+- Risk service tests: 30 passed
+- Road service tests: 11 passed
+- Schema tests: 5 passed (updated zone schema test)
+- Zone service tests: 18 passed ← NEW
+
+Architectural Benefits:
+1. Separation of concerns: zone generation separate from risk calculation
+2. Reusability: existing risk_service.py used unchanged
+3. Determinism: same inputs always produce same zones and scores
+4. Explainability: complete breakdown provided per zone
+5. Flexibility: configurable grid size (can change rows/columns)
+6. Robustness: handles edge cases (empty flood, no buildings, etc.)
+7. CRS-agnostic: works with any CRS via proper projection
+
+Files Created/Modified:
+- backend/app/services/zone_service.py (complete implementation)
+- backend/app/schemas/zone.py (updated RiskZone schema)
+- backend/app/api/routes/risk.py (added POST /api/risk/zones endpoint)
+- backend/tests/test_zone_service.py (18 comprehensive tests)
+- backend/tests/test_schemas.py (updated zone test for new schema)
+- backend/app/schemas/risk.py (fixed circular import, removed ZonePriority)
+
+Important Notes:
+- Zone geometry is full grid cell (not clipped to flood) for visual consistency
+- All area calculations use projected CRS (EPSG:6933)
+- All length calculations use estimated UTM CRS per geometry
+- Zero-count zones safely return 0.0 exposure (no division by zero)
+- Zones sorted by risk_score descending, then zone_id ascending (deterministic)
+- Development endpoint clearly marked; uses synthetic test data
+
+==================================================
+
 NEXT PART:
-Zone-level risk analysis — divide the affected region into
-geographic zones and calculate a risk score for each zone.
+End-to-end analysis integration — connect ML output, geospatial
+processing, infrastructure impact, risk engine, and zone analysis
+into a single unified workflow via POST /api/analyze.
 
