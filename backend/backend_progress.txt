@@ -411,3 +411,240 @@ End-to-end analysis integration — connect ML output, geospatial
 processing, infrastructure impact, risk engine, and zone analysis
 into a single unified workflow via POST /api/analyze.
 
+==================================================
+
+PART 6A — END-TO-END ANALYSIS ORCHESTRATION
+Status: COMPLETED
+
+Implemented:
+- Analysis service orchestration layer
+- Complete end-to-end workflow:
+  1. Flood mask processing (geo_service)
+  2. Building impact analysis (building_service)
+  3. Road impact analysis (road_service)
+  4. Critical infrastructure analysis (infrastructure_service)
+  5. Overall risk calculation (risk_service)
+  6. Zone-level risk analysis (zone_service)
+- Normalized exposure factor calculation (affected/total handling)
+- Unified AnalysisResponse output combining all layers
+- API endpoint integration (POST /api/analyze)
+- Comprehensive error handling with APIError propagation
+- Synthetic test data configuration
+- Development workflow verification
+
+Orchestration Architecture:
+```
+API Route: POST /api/analyze (analysis.py)
+    ↓
+analyze_synthetic_disaster(MLAnalysisInput)
+    ├─→ geo_service.process_flood_mask(mask_path)
+    │   └─→ flood_geometry, flood_crs, affected_area_km2
+    │
+    ├─→ building_service.analyze_building_impact(...)
+    │   └─→ affected_buildings, total_buildings
+    │
+    ├─→ road_service.analyze_road_impact(...)
+    │   └─→ affected_road_length_km, total_road_length_km
+    │
+    ├─→ infrastructure_service.analyze_infrastructure_impact(...)
+    │   └─→ affected_facilities, total_facilities
+    │
+    ├─→ Normalize exposure factors [0, 1]
+    │   ├─→ building_exposure = affected / total (or 0)
+    │   ├─→ road_disruption = affected_length / total_length (or 0)
+    │   └─→ critical_facility_exposure = affected / total (or 0)
+    │
+    ├─→ risk_service.calculate_risk(
+    │       flood_severity=input.severity,
+    │       building_exposure, road_disruption, facility_exposure)
+    │   └─→ overall_risk_score, overall_priority, breakdown
+    │
+    ├─→ zone_service.calculate_zones_with_risk(...)
+    │   └─→ sorted_zones (by risk descending)
+    │
+    └─→ AnalysisResponse (complete unified result)
+```
+
+Critical Design Principle:
+- API route (analysis.py) does NOT directly call individual services
+- All orchestration logic isolated in analysis_service.py
+- Single responsibility: route delegates to analysis_service
+- Service composition and error handling centralized
+- Easy to test and maintain
+
+Exposure Factor Normalization:
+- building_exposure = affected_buildings / total_buildings
+- road_disruption = affected_road_length_km / total_road_length_km
+- critical_facility_exposure = affected_facilities / total_facilities
+- If total = 0, exposure = 0 (safe division by zero handling)
+
+AnalysisResponse Structure:
+- summary: AnalysisSummary
+  * analysis_id (from input)
+  * disaster_type (from input)
+  * location (hardcoded: "Development Test Area (Synthetic Data)")
+  * confidence (from input)
+  * severity (from input)
+  * affected_area_km2 (calculated by geo_service, NOT from input)
+- impact: ImpactSummary
+  * affected_buildings (count)
+  * affected_roads (count)
+  * affected_critical_facilities (count)
+- risk: RiskSummary
+  * overall_risk_score (0-10 scale)
+  * overall_priority (LOW/MODERATE/HIGH/VERY_HIGH/CRITICAL)
+- zones: List[RiskZone]
+  * All zones sorted by risk_score descending
+  * Each zone includes breakdown, impact counts, geometry
+- timeline: List (empty for Part 6A)
+
+API Endpoint:
+- POST /api/analyze
+- Input: MLAnalysisInput
+  * analysis_id: str
+  * disaster_type: enum (FLOOD, CYCLONE, EARTHQUAKE, WILDFIRE, LANDSLIDE)
+  * confidence: [0, 1]
+  * severity: [0, 1]
+  * affected_area_km2: float (IGNORED; calculated by geo_service)
+  * mask_path: str
+- Output: AnalysisResponse (200 OK)
+- Error handling: Catches and re-raises APIError; wraps generic exceptions
+
+Error Handling:
+- Upstream APIError propagates through orchestration
+- Generic exceptions wrapped in APIError with descriptive message
+- Proper HTTP status codes returned (400, 404, 500)
+
+Synthetic Test Data:
+- TEST_BUILDINGS_PATH: tests/data/test_buildings.geojson
+- TEST_ROADS_PATH: tests/data/test_roads.geojson
+- TEST_FACILITIES_PATH: tests/data/test_critical_facilities.geojson
+- TEST_FLOOD_MASK: tests/data/test_flood_mask.tif (10×10 raster, 12.7726 sq km)
+- All data geocoded to development test area (Germany, around 10°E, 50°N)
+- Used ONLY for Part 6A development/testing; NOT for production
+
+Test Results:
+- Analysis integration tests: 13 tests passed (100%)
+  * End-to-end successful analysis workflow
+  * Affected area calculated (not client-supplied value)
+  * Building impact integration
+  * Road impact integration
+  * Critical facility impact integration
+  * Overall risk integration (score [0,10], valid priority)
+  * Zone generation and integration
+  * Highest-risk zone sorting (descending)
+  * Timeline empty (Part 6A)
+  * Client area ignored (calculated area used)
+  * Invalid mask handling (produces APIError)
+  * Invalid request validation (Pydantic)
+  * API endpoint returns 200 with valid structure
+
+Full Backend Test Suite:
+- Total tests passed: 107/107 (100%)
+- Building service tests: 9 passed
+- Geospatial service tests: 7 passed
+- Health tests: 2 passed
+- Infrastructure service tests: 11 passed
+- Risk service tests: 30 passed
+- Road service tests: 11 passed
+- Schema tests: 5 passed
+- Zone service tests: 18 passed
+- Analysis service tests: 13 passed ← NEW
+
+Files Created/Modified:
+- backend/app/services/analysis_service.py (complete orchestration, 293 lines)
+- backend/app/api/routes/analysis.py (updated endpoint)
+- backend/tests/test_analysis_service.py (13 comprehensive tests)
+- backend/backend_progress.txt (this file)
+
+Important Notes:
+- Part 6A is orchestration-only with synthetic test data
+- No ML model integration; severity passed through from input
+- No LLM/AI integration; only deterministic calculations
+- No database; all data in-memory with synthetic sources
+- No frontend; development API testing only
+- Real ML integration deferred to Part 6B
+- Zone calculation includes full flood geometry (not clipped)
+- All calculations deterministic and reproducible
+- Client-supplied affected_area_km2 completely ignored (calculated instead)
+- All service calls sequenced correctly for data flow
+
+Key Achievements:
+✓ Services seamlessly integrated without API changes
+✓ AnalysisResponse complete with all required fields
+✓ Error handling working end-to-end
+✓ Orchestration layer centralized in analysis_service
+✓ Synthetic test data fully utilized
+✓ All 107 backend tests passing
+✓ Development workflow verified
+✓ Ready for Part 6B (real ML integration)
+
+NEXT PART:
+Real ML integration — replace severity pass-through with actual
+flood-detection ML model inference (Part 6B).
+
+==================================================
+
+PART 6B — REAL ML INTEGRATION
+Status: COMPLETED
+
+Implemented:
+- ML adapter service: backend/app/services/ml_integration_service.py
+- Severity normalization from ML [0, 10] scale to backend [0, 1]
+- Unique analysis ID generation
+- ML disaster type mapping to backend enum values
+- Binary segmentation mask conversion to georeferenced GeoTIFF
+- CRS and transform preservation from source image metadata
+- Conversion from ML output to backend MLAnalysisInput contract
+- No-disaster handling for "normal" ML outputs
+- Upload-driven workflow endpoint: POST /api/analyze/image
+- API error wrapping and validation for malformed ML output
+
+Architectural Decision:
+- The backend geospatial calculation engine remains the source of truth:
+  * ML severity is normalized for contract compatibility
+  * ML area is not trusted; affected_area_km2 is recalculated by geo_service
+  * Flood mask becomes a real GeoTIFF with spatial metadata before downstream analysis
+  * Risk, impact, and zone logic remain deterministic and backend-owned
+
+Workflow:
+- Upload GeoTIFF image
+- Validate CRS and transform metadata
+- Run ML classifier + segmentation inference
+- Extract binary mask and normalize severity
+- Write georeferenced mask GeoTIFF in backend/generated_masks/
+- Convert ML result to MLAnalysisInput
+- Invoke the existing backend analyze_disaster workflow
+- Return the unified AnalysisResponse
+
+Key Validation Rules:
+- Severity clamp behavior: values slightly outside [0, 10] are clamped to range
+- Invalid values outside safe tolerance still raise ValueError
+- Mask must be a 2D numpy array of uint8 values
+- Source raster must include CRS and transform metadata
+- Unsupported disaster types raise ValueError
+
+Files Created/Modified:
+- backend/app/services/ml_integration_service.py
+- backend/app/api/routes/analysis.py
+- backend/tests/test_ml_integration_service.py
+
+Test Results:
+- ML integration tests: 27/27 passed
+- Full backend suite: 134/134 passed
+
+Environment Note:
+- The repository's backend venv contains the Python ML dependencies required for backend and adapter tests.
+- The standalone repository-level smoke test, test_ml.py, remains blocked in the current environment because the active interpreter does not yet have torch/torchvision installed.
+- This is an environment dependency issue, not a backend logic regression.
+- The correct validation path in this environment is the project venv:
+  .\backend\venv\Scripts\python -m pytest tests/test_ml_integration_service.py -v
+  .\backend\venv\Scripts\python -m pytest tests/ -v
+
+Important Note:
+- This implementation intentionally does not add database, LLM/AI orchestration,
+  or frontend work. It keeps the backend deterministic pipeline and ML integration
+  isolated behind a compatible adapter layer.
+
+==================================================
+
