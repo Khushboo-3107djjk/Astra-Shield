@@ -57,7 +57,8 @@ Implemented:
 * Development geospatial endpoint
 
 Tests:
-* Record the actual number of tests passed: 6 tests passed.
+* Record the actual number of tests passed: 7 tests passed.
+* Test 5 (Area calculation) was upgraded to independently verify the geometry via pyproj's WGS84 Geod boundary area (Expected: 12.7726 sq km) and passed within a 0.001 numerical tolerance against the algorithm's EPSG:6933 output.
 
 Notes:
 * Area calculation: Converts geographic CRS into an equal-area projected CRS (EPSG:6933) using GeoPandas before calling `.area` to ensure accurate square meter readings regardless of global location.

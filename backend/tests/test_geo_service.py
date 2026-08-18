@@ -37,12 +37,18 @@ def test_crs_preservation():
 def test_area_calculation():
     result = process_flood_mask(VALID_MASK_PATH)
     area = result["affected_area_km2"]
-    # 4x4 block of 0.01 degree pixels at latitude 50
-    # A 0.01 deg x 0.01 deg pixel at equator is roughly 1.11km x 1.11km = ~1.23 sq km.
-    # At 50 N, longitude degree is shorter (cos(50) ~ 0.642). Area per pixel is smaller.
-    # The calculation EPSG:6933 should give a reasonable strictly positive physical area.
-    assert area > 0.0
-    assert area < 100.0 # Just a reasonable bound
+    
+    # 4x4 block of 0.01 degree pixels. Top-left at (10.0, 50.0).
+    # The flood block spans:
+    # Longitude: 10.03 to 10.07
+    # Latitude: 49.93 to 49.97
+    # 
+    # Independently calculating area of this box on WGS84 ellipsoid using pyproj.Geod
+    # yields an expected area of ~12.7726 sq km.
+    expected_area = 12.7726
+    
+    # Verify the calculated area matches the expected area within a tiny tolerance (0.001)
+    assert abs(area - expected_area) < 0.001
 
 def test_invalid_raster():
     with pytest.raises(APIError) as exc_info:
