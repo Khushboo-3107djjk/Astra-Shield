@@ -48,6 +48,11 @@ env/
 ehthumbs.db
 Thumbs.db
 
+# ML/Backend generated files
+backend/generated_masks/
+*.tif
+*.tiff
+
 # Node
 node_modules/
 npm-debug.log
