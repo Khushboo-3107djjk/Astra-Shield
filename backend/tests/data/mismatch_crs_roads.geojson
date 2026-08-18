@@ -1,0 +1,10 @@
+{
+"type": "FeatureCollection",
+"name": "mismatch_crs_roads",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:EPSG::3857" } },
+"features": [
+{ "type": "Feature", "properties": { "road_id": "R_IN", "road_type": "major" }, "geometry": { "type": "LineString", "coordinates": [ [ 1117647.687564466614276, 6437621.220336207188666 ], [ 1119874.077380332164466, 6437621.220336207188666 ] ] } },
+{ "type": "Feature", "properties": { "road_id": "R_OUT", "road_type": "minor" }, "geometry": { "type": "LineString", "coordinates": [ [ 1124326.857012063032016, 6428975.579877882264555 ], [ 1126553.246827928349376, 6428975.579877882264555 ] ] } },
+{ "type": "Feature", "properties": { "road_id": "R_PARTIAL", "road_type": "major" }, "geometry": { "type": "LineString", "coordinates": [ [ 1114308.102840668521821, 6439351.42524697445333 ], [ 1118760.882472399622202, 6439351.42524697445333 ] ] } }
+]
+}

@@ -1,0 +1,10 @@
+{
+"type": "FeatureCollection",
+"name": "test_buildings",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "building_id": "B_IN" }, "geometry": { "type": "Polygon", "coordinates": [ [ [ 10.04, 49.94 ], [ 10.05, 49.94 ], [ 10.05, 49.95 ], [ 10.04, 49.95 ], [ 10.04, 49.94 ] ] ] } },
+{ "type": "Feature", "properties": { "building_id": "B_OUT" }, "geometry": { "type": "Polygon", "coordinates": [ [ [ 10.1, 49.9 ], [ 10.11, 49.9 ], [ 10.11, 49.91 ], [ 10.1, 49.91 ], [ 10.1, 49.9 ] ] ] } },
+{ "type": "Feature", "properties": { "building_id": "B_INTERSECT" }, "geometry": { "type": "Polygon", "coordinates": [ [ [ 10.02, 49.96 ], [ 10.04, 49.96 ], [ 10.04, 49.98 ], [ 10.02, 49.98 ], [ 10.02, 49.96 ] ] ] } }
+]
+}
