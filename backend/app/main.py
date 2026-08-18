@@ -4,7 +4,7 @@ Main FastAPI Application
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.routes import health, analysis
+from app.api.routes import health, analysis, geospatial
 from app.api.errors import APIError, api_error_handler
 
 app = FastAPI(
@@ -35,3 +35,4 @@ def read_root():
 
 app.include_router(health.router, prefix="/api")
 app.include_router(analysis.router, prefix="/api", tags=["Analysis"])
+app.include_router(geospatial.router, prefix="/api/geospatial", tags=["Geospatial Development"])
