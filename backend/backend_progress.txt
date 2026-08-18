@@ -168,9 +168,123 @@ Notes:
 - Point geometry type added to GeoJSONGeometry schema.
 
 ==================================================
+PART 5A — EXPLAINABLE RISK ENGINE
+Status: COMPLETED
+
+Implemented:
+- Deterministic risk calculation service
+- Four normalized risk factors (0-1 range):
+  * Flood severity
+  * Building exposure
+  * Road disruption
+  * Critical facility exposure
+- Explicit prototype weights (sum = 1.0):
+  * Flood severity: 0.35
+  * Building exposure: 0.25
+  * Road disruption: 0.20
+  * Critical facility exposure: 0.20
+- Weighted risk calculation: normalized_risk = sum(factor × weight)
+- Risk score scaling: risk_score = normalized_risk × 10 (0-10 range)
+- Priority classification with thresholds:
+  * LOW: 0.0 ≤ score < 3.0
+  * MODERATE: 3.0 ≤ score < 5.0
+  * HIGH: 5.0 ≤ score < 7.0
+  * VERY_HIGH: 7.0 ≤ score < 8.5
+  * CRITICAL: 8.5 ≤ score ≤ 10.0
+- Explainable risk breakdown per factor:
+  * Factor value
+  * Factor weight
+  * Factor contribution (value × weight)
+- Pydantic schemas:
+  * RiskInput: Normalized input values
+  * RiskFactor: Per-factor breakdown
+  * RiskBreakdown: All factors breakdown
+  * RiskAssessment: Complete risk result
+- Development API endpoint: POST /api/risk/calculate
+- Edge case handling (all-zero, all-maximum, single-factor)
+- Input validation (0.0 ≤ factor ≤ 1.0)
+- Deterministic output verification
+- Floating-point precision handling
+
+Test Results:
+- Risk service tests: 30 tests passed
+  * Weight sum validation
+  * All-zero input (risk_score = 0, priority = LOW)
+  * All-maximum input (risk_score = 10, priority = CRITICAL)
+  * Flood-only contribution (3.5/10)
+  * Building-only contribution (2.5/10)
+  * Road-only contribution (2.0/10)
+  * Critical-facility-only contribution (2.0/10)
+  * Mixed input validation
+  * Contribution sum verification
+  * Priority boundary testing (10 parametrized cases)
+  * Invalid input rejection (8 parametrized cases)
+  * Deterministic output verification
+  * API endpoint testing
+  * Schema validation testing
+
+Full Backend Test Suite:
+- Total tests passed: 76/76 (100%)
+- Building service tests: 9 passed
+- Geospatial service tests: 7 passed
+- Health tests: 2 passed
+- Infrastructure service tests: 11 passed
+- Risk service tests: 30 passed ← NEW
+- Road service tests: 11 passed
+- Schema tests: 5 passed
+
+IMPORTANT DISCLAIMER:
+The weighting scheme and priority thresholds are prototype design
+choices for the ASTRA-SHIELD hackathon demonstration. They are NOT
+an official disaster-risk standard or government-approved methodology.
+
+Architecture:
+    ML / Geospatial services → raw impact metrics
+         ↓
+    Normalization (upstream services) → normalized factors [0-1]
+         ↓
+    Risk Engine (this module) → deterministic calculation
+         ↓
+    RiskAssessment → explainable output
+
+Key Design Decisions:
+1. Deterministic calculation for reproducibility
+2. Transparent weighted model (no black-box ML)
+3. Normalized [0-1] inputs from upstream services
+4. Clear separation of concerns (risk engine independent)
+5. Explainability prioritized (breakdown included)
+6. Development endpoint for testing/integration
+7. Comprehensive validation and edge case handling
+
+API Documentation:
+- Endpoint: POST /api/risk/calculate
+- Input: RiskInput (4 normalized factors)
+- Output: RiskAssessment (score, priority, breakdown, weights)
+- Swagger includes full descriptions and disclaimer
+- Schema validation enforced by Pydantic
+
+Example Calculation:
+Input: flood=0.82, building=0.60, road=0.35, facility=0.50
+Breakdown:
+  - flood: 0.82 × 0.35 = 0.287
+  - building: 0.60 × 0.25 = 0.150
+  - road: 0.35 × 0.20 = 0.070
+  - facility: 0.50 × 0.20 = 0.100
+Normalized risk: 0.607
+Risk score: 6.07/10
+Priority: HIGH
+
+Files Created/Modified:
+- backend/app/services/risk_service.py (complete implementation)
+- backend/app/schemas/risk.py (complete schemas)
+- backend/app/api/routes/risk.py (endpoint)
+- backend/tests/test_risk_service.py (30 comprehensive tests)
+- backend/app/main.py (router registration)
+- backend/requirements.txt (cleaned up encoding)
+
+==================================================
 
 NEXT PART:
-Risk engine — combine flood severity, building exposure,
-road disruption, and critical infrastructure exposure into
-an explainable risk score.
+Zone-level risk analysis — divide the affected region into
+geographic zones and calculate a risk score for each zone.
 
