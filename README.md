@@ -113,31 +113,134 @@ Astra-Shield/
 
 ## 🛠️ Tech Stack
 
-### Frontend
-- React / Vue.js
-- Leaflet / Mapbox (mapping)
-- Chart.js / Plotly (visualization)
-- Tailwind CSS / Material UI
+### 🎨 Frontend
+| Technology | Version | Purpose |
+|---|---|---|
+| **React** | 18.2.0 | UI framework |
+| **React Router DOM** | 6.20.0 | Page navigation |
+| **Tailwind CSS** | 3.4.0 | Styling |
+| **Material UI** | 4.12.4 | UI components |
+| **Leaflet** | 1.9.4 | Interactive mapping |
+| **React Leaflet** | 4.2.1 | React wrapper for Leaflet |
+| **Plotly.js** | 2.26.0 | Data visualization |
+| **Recharts** | 2.10.3 | Chart components |
+| **Axios** | 1.6.2 | HTTP client |
 
-### Backend
-- FastAPI (Python)
-- PostgreSQL / MongoDB
-- GDAL (geospatial processing)
+### 🔧 Backend
+| Technology | Version | Purpose |
+|---|---|---|
+| **FastAPI** | 0.104.1 | Web framework |
+| **Uvicorn** | 0.24.0 | ASGI server |
+| **Pydantic** | 2.5.0 | Data validation |
+| **SQLAlchemy** | 2.0.23 | ORM for databases |
+| **Alembic** | 1.13.0 | Database migrations |
+| **PostgreSQL** | 15 | Primary database |
+| **MongoDB** | Latest | NoSQL option |
+| **Python-dotenv** | 1.0.0 | Environment management |
 
-### ML/AI
-- PyTorch / TensorFlow
-- OpenCV (image processing)
-- YOLO / U-Net (object detection & segmentation)
-- Scikit-learn (evaluation)
+### 🤖 ML/AI
+| Technology | Version | Purpose |
+|---|---|---|
+| **PyTorch** | 2.1.1 | Deep learning framework |
+| **TorchVision** | 0.16.1 | Computer vision models |
+| **OpenCV** | 4.8.1.78 | Image processing |
+| **NumPy** | 1.24.3 | Numerical computing |
+| **Pandas** | 2.1.3 | Data processing |
+| **Scikit-learn** | 1.3.2 | ML algorithms & evaluation |
+| **Scikit-image** | 0.22.0 | Image processing utilities |
+| **Pillow** | 10.1.0 | Image manipulation |
 
-### DevOps
-- Docker
-- Docker Compose
-- GitHub
+### 🌍 Geospatial & Remote Sensing
+| Technology | Version | Purpose |
+|---|---|---|
+| **Rasterio** | 1.3.9 | Satellite image I/O |
+| **GeoPandas** | 0.14.0 | Geospatial data processing |
+| **Shapely** | 2.0.2 | Geometric objects |
+| **Folium** | 0.14.0 | Map visualization |
+| **GDAL** | Latest | Geospatial data library |
+| **Imageio** | 2.33.1 | Image file I/O |
+
+### 🚀 DevOps & Deployment
+| Technology | Purpose |
+|---|---|
+| **Docker** | Container platform |
+| **Docker Compose** | Multi-container orchestration |
+| **Git/GitHub** | Version control |
+| **Python 3.9+** | Backend runtime |
+| **Node.js 16+** | Frontend runtime |
+
+### 📊 Testing & Development
+| Technology | Version | Purpose |
+|---|---|---|
+| **pytest** | 7.4.3 | Python testing framework |
+| **Black** | 23.12.0 | Code formatter |
+| **Flake8** | 6.1.0 | Linting |
+| **@testing-library/react** | 14.1.2 | React component testing |
 
 ---
 
-## 🚀 Getting Started
+## � Tech Stack Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    CLIENT LAYER (Port 3000)                  │
+│  React 18.2 + Tailwind CSS + Material UI + Leaflet          │
+│  ↓ Axios                                                      │
+├─────────────────────────────────────────────────────────────┤
+│                    API LAYER (Port 8000)                      │
+│  FastAPI 0.104 + Uvicorn + Pydantic Validation              │
+│  ├─ /api/analyze          → Route to ML Service              │
+│  ├─ /api/impact           → Geospatial Analysis              │
+│  ├─ /api/zones            → Risk Prioritization              │
+│  └─ /api/emergency-alert  → Response Generation              │
+│  ↓ SQLAlchemy ORM                                             │
+├─────────────────────────────────────────────────────────────┤
+│                    ML/AI LAYER                                │
+│  PyTorch + OpenCV + Scikit-learn                             │
+│  ├─ DisasterClassifier    → Classification (ResNet/EfficientNet)
+│  └─ DisasterSegmenter     → Segmentation (U-Net/DeepLab)     │
+│  ↓ Inference Pipeline                                         │
+├─────────────────────────────────────────────────────────────┤
+│                  GEOSPATIAL LAYER                             │
+│  Rasterio + GeoPandas + Folium                               │
+│  ├─ Infrastructure Impact → Building/Road/Hospital detection │
+│  ├─ Risk Zones            → Zone A/B/C/D prioritization      │
+│  └─ Map Visualization     → Leaflet/Folium rendering         │
+│  ↓ SQLAlchemy                                                 │
+├─────────────────────────────────────────────────────────────┤
+│                    DATA LAYER (Port 5432)                     │
+│  PostgreSQL 15 + Alembic Migrations                          │
+│  (Optional: MongoDB for documents)                            │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Data Flow
+```
+Satellite Image
+    ↓
+[Frontend Upload] (Axios)
+    ↓
+[FastAPI /api/analyze]
+    ↓
+[PyTorch Inference]
+  ├─ Classifier → disaster_type, confidence
+  └─ Segmenter → mask, affected_area, severity
+    ↓
+[Geospatial Processing]
+  ├─ Infrastructure Impact → buildings, roads, hospitals
+  ├─ Risk Calculation → zones A/B/C/D
+  └─ Response Generation → alerts, recommendations
+    ↓
+[PostgreSQL Storage]
+    ↓
+[Frontend Visualization]
+  ├─ Before/After Slider
+  ├─ Impact Map (Leaflet)
+  ├─ Risk Zones (Folium)
+  └─ Emergency Response Panel
+```
+
+---
 
 ### Prerequisites
 - Python 3.9+
