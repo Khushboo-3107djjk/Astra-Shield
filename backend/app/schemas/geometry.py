@@ -5,6 +5,8 @@ from pydantic import BaseModel, Field
 class GeometryType(str, Enum):
     POLYGON = "Polygon"
     MULTIPOLYGON = "MultiPolygon"
+    LINESTRING = "LineString"
+    MULTILINESTRING = "MultiLineString"
 
 class GeoJSONGeometry(BaseModel):
     """

@@ -5,6 +5,7 @@ from shapely.geometry import shape
 from app.schemas.geometry import GeoJSONGeometry
 from app.services.geo_service import process_flood_mask
 from app.services.building_service import analyze_building_impact
+from app.services.road_service import analyze_road_impact
 
 router = APIRouter()
 
@@ -50,8 +51,45 @@ class BuildingAnalysisResponse(BaseModel):
     description="Development endpoint to test computing which buildings intersect the flood geometry."
 )
 def analyze_buildings(request: BuildingAnalysisRequest):
-    # Convert GeoJSON dict to shapely geometry
     flood_geom = shape(request.flood_geometry)
-    
     result = analyze_building_impact(flood_geom, request.flood_crs, request.buildings_path)
     return BuildingAnalysisResponse(**result)
+
+class RoadAnalysisRequest(BaseModel):
+    flood_geometry: dict = Field(..., description="Flood polygon GeoJSON geometry")
+    flood_crs: str = Field(..., description="CRS of the flood geometry")
+    roads_path: str = Field(..., description="Path to the roads GeoJSON file")
+
+class RoadStats(BaseModel):
+    total_segments: int
+    affected_segments: int
+    affected_length_km: float
+
+class AffectedRoadDetail(BaseModel):
+    road_id: str
+    road_type: str
+    total_length_km: float
+    affected_length_km: float
+    geometry: GeoJSONGeometry
+
+class RoadAnalysisResponse(BaseModel):
+    total_road_segments: int
+    affected_road_segments: int
+    affected_percentage: float
+    total_road_length_km: float
+    affected_road_length_km: float
+    affected_road_ids: List[str]
+    major_roads: RoadStats
+    minor_roads: RoadStats
+    affected_road_details: List[AffectedRoadDetail]
+
+@router.post(
+    "/analyze-roads",
+    response_model=RoadAnalysisResponse,
+    summary="Development Test Endpoint for Road Impact",
+    description="Development endpoint to test computing which roads intersect the flood geometry and their lengths."
+)
+def analyze_roads(request: RoadAnalysisRequest):
+    flood_geom = shape(request.flood_geometry)
+    result = analyze_road_impact(flood_geom, request.flood_crs, request.roads_path)
+    return RoadAnalysisResponse(**result)

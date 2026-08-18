@@ -92,5 +92,40 @@ Notes:
 * Synthetic building data is test-only.
 * Real infrastructure data will be integrated later.
 
+==================================================
+PART 4B — ROAD IMPACT ANALYSIS
+Status: COMPLETED
+
+Implemented:
+* Synthetic road GeoJSON dataset
+* Road geospatial service
+* Road/flood CRS compatibility handling
+* Road intersection analysis
+* Affected road segment count
+* Affected road percentage
+* Total road length
+* Affected road length
+* Major/minor road statistics
+* Affected road intersection geometries
+* Development endpoint
+* Road unit tests
+
+Definition:
+A road segment is considered affected when its geometry
+intersects the flood polygon.
+
+For affected geometry:
+Return only the intersection between the road
+and the flood polygon.
+
+Tests:
+* Record the actual number of tests passed: 11 tests passed.
+* Upgraded tests 5 and 6 to strictly assert geodesic total lengths (~5.7425 km) and affected lengths (~2.8705 km) independently derived using pyproj's WGS84 Geod to explicitly test UTM metric conversion tolerance.
+
+Notes:
+* Synthetic road data is test-only.
+* Metric lengths must be calculated in a suitable projected CRS.
+* Geographic degree coordinates must not be used directly for length.
+
 NEXT PART:
-Road impact analysis — affected road segments and road disruption statistics.
+Critical infrastructure impact analysis — hospitals, schools, emergency facilities, and other critical facilities.
