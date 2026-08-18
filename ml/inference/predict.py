@@ -1,8 +1,6 @@
 """
 Main Inference Pipeline - ASTRA-SHIELD
-Takes satellite image → Outputs complete disaster analysis
-
-This is what Person 2 (Backend) and Person 3 (Frontend) will call!
+Takes satellite image(s) → Outputs complete modular disaster analysis
 """
 
 import torch
@@ -12,42 +10,35 @@ from pathlib import Path
 from datetime import datetime
 import base64
 import cv2
-
-# Import our models
 import sys
+
 sys.path.append(str(Path(__file__).parent.parent))
 
 from preprocessing.preprocess import SatelliteImagePreprocessor
 from models.classifier.disaster_classifier import DisasterClassifier
-from models.segmentation.disaster_segmenter import DisasterSegmenter
-from evaluation.metrics import DisasterMetrics, print_results
+
+# Import disaster modules
+from models.disaster_modules.flood import FloodModule
+from models.disaster_modules.wildfire import WildfireModule
+from models.disaster_modules.cyclone import CycloneModule
+from models.disaster_modules.landslide import LandslideModule
+from models.disaster_modules.earthquake import EarthquakeModule
+from models.disaster_modules.drought import DroughtModule
 
 
 class DisasterAnalyzer:
-    """End-to-end disaster analysis pipeline"""
+    """End-to-end multi-disaster analysis pipeline"""
     
     def __init__(
         self,
         classifier_path=None,
-        segmenter_path=None,
         device='cpu',
         img_size=512
     ):
-        """
-        Initialize the complete analysis pipeline
-        
-        Args:
-            classifier_path: Path to pre-trained classifier
-            segmenter_path: Path to pre-trained segmenter
-            device: 'cpu' or 'cuda'
-            img_size: Input image size (default 512x512)
-        """
         self.device = device
         self.img_size = img_size
         
-        # Initialize components
-        print("🚀 Initializing ASTRA-SHIELD ML Pipeline...")
-        
+        print("🚀 Initializing ASTRA-SHIELD Modular ML Pipeline...")
         self.preprocessor = SatelliteImagePreprocessor(img_size=img_size, normalize=True)
         print("  ✅ Preprocessor loaded")
         
@@ -56,238 +47,142 @@ class DisasterAnalyzer:
             device=device,
             pretrained=True
         )
-        print("  ✅ Classifier loaded")
+        print("  ✅ 7-Class Classifier loaded")
         
-        self.segmenter = DisasterSegmenter(
-            model_path=segmenter_path,
-            device=device
-        )
-        print("  ✅ Segmenter loaded")
-        
+        # Initialize modules
+        self.modules = {
+            "flood": FloodModule(device=device),
+            "wildfire": WildfireModule(device=device),
+            "cyclone": CycloneModule(device=device),
+            "landslide": LandslideModule(device=device),
+            "earthquake": EarthquakeModule(device=device),
+            "drought": DroughtModule(device=device)
+        }
+        print("  ✅ Disaster modules loaded")
         print("✅ Pipeline ready!\n")
     
-    def analyze(self, image_path, return_visualization=True):
+    def analyze(self, image_path, before_image_path=None, return_visualization=True):
         """
-        Complete disaster analysis from satellite image
-        
-        Args:
-            image_path: Path to satellite image
-            return_visualization: Whether to return visualization overlay
-            
-        Returns:
-            {
-                "success": bool,
-                "timestamp": "2026-08-18T10:30:45",
-                "image_path": "path/to/image.tif",
-                
-                "classification": {
-                    "disaster_type": "flood",
-                    "confidence": 0.94,
-                    "predictions": {
-                        "normal": 0.02,
-                        "flood": 0.94,
-                        "wildfire": 0.03,
-                        "landslide": 0.01
-                    }
-                },
-                
-                "segmentation": {
-                    "affected_area_km2": 24.3,
-                    "severity_score": 8.5,
-                    "confidence": 0.91,
-                    "mask": "base64_encoded_mask"
-                },
-                
-                "metrics": {
-                    "affected_pixels": 127450,
-                    "total_pixels": 262144
-                },
-                
-                "visualization": "base64_encoded_overlay" (optional)
-            }
+        Complete modular disaster analysis.
         """
-        
         try:
             print(f"📷 Analyzing: {image_path}")
             
-            # Step 1: Load and preprocess image
-            print("  [1/4] Preprocessing image...")
-            image, _, original = self.preprocessor.preprocess(
-                image_path,
-                return_original=True
-            )
-            image_tensor = torch.from_numpy(image).permute(2, 0, 1).unsqueeze(0)
-            print("       ✅ Image preprocessed")
+            # 1. Preprocess
+            print("  [1/4] Preprocessing image(s)...")
+            image, _, original = self.preprocessor.preprocess(image_path, return_original=True)
+            image_tensor = torch.from_numpy(image).permute(2, 0, 1).unsqueeze(0).to(self.device)
             
-            # Step 2: Classification
+            before_image_tensor = None
+            if before_image_path:
+                b_image, _, _ = self.preprocessor.preprocess(before_image_path)
+                before_image_tensor = torch.from_numpy(b_image).permute(2, 0, 1).unsqueeze(0).to(self.device)
+                
+            print("       ✅ Images preprocessed")
+            
+            # 2. Classification
             print("  [2/4] Classifying disaster type...")
-            classification = self.classifier.predict(image_tensor)
-            disaster_type = classification["disaster_type"]
-            class_confidence = classification["confidence"]
-            print(f"       ✅ Detected: {disaster_type} ({class_confidence:.1%})")
+            class_result = self.classifier.predict(image_tensor)
             
-            # Step 3: Segmentation
-            print("  [3/4] Segmenting affected area...")
-            mask, seg_confidence = self.segmenter.predict(image_tensor, threshold=0.5)
+            disaster_type = class_result["disaster_type"]
+            confidence = class_result["confidence"]
             
-            # Calculate metrics from mask
-            affected_area = self.segmenter.calculate_affected_area(mask)
-            severity = self.segmenter.calculate_severity(mask)
-            affected_pixels = mask.sum()
-            
-            print(f"       ✅ Affected area: {affected_area:.2f} km²")
-            print(f"       ✅ Severity: {severity:.1f}/10")
-            print(f"       ✅ Confidence: {seg_confidence:.1%}")
-            
-            # Step 4: Encode outputs
-            print("  [4/4] Encoding outputs...")
-            
-            # Convert mask to base64
-            mask_uint8 = (mask * 255).astype(np.uint8)
-            _, mask_encoded = cv2.imencode('.png', mask_uint8)
-            mask_b64 = base64.b64encode(mask_encoded).decode('utf-8')
-            
-            # Optionally create visualization
-            visualization_b64 = None
-            if return_visualization:
-                viz = self.segmenter.visualize_mask(original, mask, alpha=0.5)
-                _, viz_encoded = cv2.imencode('.png', cv2.cvtColor(viz, cv2.COLOR_RGB2BGR))
-                visualization_b64 = base64.b64encode(viz_encoded).decode('utf-8')
-            
-            print("       ✅ Outputs encoded")
-            
-            # Prepare result
-            result = {
-                "success": True,
-                "timestamp": datetime.now().isoformat(),
-                "image_path": str(image_path),
+            if class_result["status"] == "model_not_available":
+                print("       ⚠️ Classifier untrained. Falling back to module_not_available.")
+                return self._get_fallback_response("unknown", None)
                 
-                "classification": {
+            print(f"       ✅ Detected: {disaster_type} (Confidence: {confidence:.2f})")
+            
+            # 3. Route to Disaster Module
+            print("  [3/4] Routing to disaster-specific analysis...")
+            if disaster_type == "normal" or disaster_type not in self.modules:
+                return {
                     "disaster_type": disaster_type,
-                    "confidence": float(class_confidence),
-                    "predictions": classification["predictions"]
-                },
-                
-                "segmentation": {
-                    "affected_area_km2": float(affected_area),
-                    "severity_score": float(severity),
-                    "confidence": float(seg_confidence),
-                    "mask": mask_b64
-                },
-                
-                "metrics": {
-                    "affected_pixels": int(affected_pixels),
-                    "total_pixels": int(mask.size),
-                    "affected_percentage": float((affected_pixels / mask.size) * 100)
+                    "confidence": confidence,
+                    "severity": {"level": None, "score": None},
+                    "affected_area_km2": None,
+                    "change_percent": None,
+                    "mask_path": None,
+                    "analysis_status": "success",
+                    "data_source": "satellite"
                 }
-            }
+                
+            module = self.modules[disaster_type]
+            analysis_result = module.analyze(image_tensor, before_image_tensor, original, confidence)
             
-            if visualization_b64:
-                result["visualization"] = visualization_b64
-            
+            # 4. Return standard JSON
+            print("  [4/4] Encoding outputs...")
             print("✅ Analysis complete!\n")
+            return analysis_result
             
-            return result
-        
         except Exception as e:
             print(f"❌ Error during analysis: {e}\n")
-            return {
-                "success": False,
-                "error": str(e),
-                "timestamp": datetime.now().isoformat()
-            }
-    
-    def analyze_batch(self, image_paths):
-        """Analyze multiple images"""
-        results = []
-        for img_path in image_paths:
-            result = self.analyze(img_path)
-            results.append(result)
-        return results
-    
+            return self._get_fallback_response("error", None)
+            
+    def _get_fallback_response(self, disaster_type, confidence=None):
+        return {
+            "disaster_type": disaster_type,
+            "confidence": confidence,
+            "severity": {
+                "level": None,
+                "score": None
+            },
+            "affected_area_km2": None,
+            "change_percent": None,
+            "mask_path": None,
+            "analysis_status": "model_not_available",
+            "data_source": "demo"
+        }
+        
     def save_result(self, result, output_path):
-        """Save analysis result to JSON"""
         output_path = Path(output_path)
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        
-        # Create a copy without base64 for readability
-        result_clean = result.copy()
-        if "visualization" in result_clean:
-            del result_clean["visualization"]  # Don't save huge base64 in JSON
-        
         with open(output_path, 'w') as f:
-            json.dump(result_clean, f, indent=2)
-        
+            json.dump(result, f, indent=2)
         print(f"✅ Result saved to {output_path}")
-        
-        return result_clean
-
-
-# ============================================================================
-# BACKEND API INTEGRATION
-# ============================================================================
-# Person 2 should call this function from their FastAPI endpoint
-
-def api_analyze_image(image_path: str, classifier_path=None, segmenter_path=None):
-    """
-    FastAPI-ready analysis function
-    
-    Usage in backend:
-    ```
-    from ml.inference.predict import api_analyze_image
-    
-    @app.post("/api/analyze")
-    async def analyze(file: UploadFile):
-        result = api_analyze_image(str(file.filename))
         return result
-    ```
-    """
+
+
+def api_analyze_image(image_path: str, before_image_path=None, classifier_path=None):
     analyzer = DisasterAnalyzer(
         classifier_path=classifier_path,
-        segmenter_path=segmenter_path,
         device='cuda' if torch.cuda.is_available() else 'cpu'
     )
-    return analyzer.analyze(image_path, return_visualization=True)
+    return analyzer.analyze(image_path, before_image_path=before_image_path)
 
-
-# ============================================================================
-# TESTING & DEMO
-# ============================================================================
 
 if __name__ == "__main__":
     print("🛰️  ASTRA-SHIELD ML INFERENCE PIPELINE\n")
     
-    # Initialize analyzer
     analyzer = DisasterAnalyzer(device='cpu')
-    
-    # Example: Analyze a demo image (if it exists)
     demo_image = Path(__file__).parent.parent / "demo" / "flood" / "before.png"
     
     if demo_image.exists():
-        result = analyzer.analyze(str(demo_image), return_visualization=True)
+        result = analyzer.analyze(str(demo_image))
         
-        # Print summary
-        if result["success"]:
-            print("="*60)
-            print("ANALYSIS RESULT SUMMARY")
-            print("="*60)
-            print(f"Disaster Type:    {result['classification']['disaster_type'].upper()}")
-            print(f"Confidence:       {result['classification']['confidence']:.1%}")
-            print(f"Affected Area:    {result['segmentation']['affected_area_km2']:.2f} km²")
-            print(f"Severity Score:   {result['segmentation']['severity_score']:.1f}/10")
-            print(f"Affected %:       {result['metrics']['affected_percentage']:.1f}%")
-            print("="*60 + "\n")
-            
-            # Save result
-            output_file = demo_image.parent / "result.json"
-            analyzer.save_result(result, output_file)
+        print("="*60)
+        print("ANALYSIS RESULT SUMMARY")
+        print("="*60)
+        print(f"Disaster Type:    {str(result.get('disaster_type')).upper()}")
+        
+        conf = result.get('confidence')
+        print(f"Confidence:       {f'{conf:.1%}' if conf is not None else 'N/A'}")
+        
+        severity = result.get('severity', {})
+        level = severity.get('level')
+        score = severity.get('score')
+        print(f"Severity:         {level if level else 'N/A'} ({score if score else 'N/A'})")
+        
+        area = result.get('affected_area_km2')
+        print(f"Affected Area:    {f'{area:.2f} km²' if area is not None else 'N/A (Needs Geospatial)'}")
+        
+        change = result.get('change_percent')
+        print(f"Change Percent:   {f'{change:.1f}%' if change is not None else 'N/A'}")
+        
+        print(f"Status:           {result.get('analysis_status')}")
+        print("="*60 + "\n")
+        
+        output_file = demo_image.parent / "result.json"
+        analyzer.save_result(result, output_file)
     else:
         print(f"⚠️  Demo image not found: {demo_image}")
-        print("   To test, place satellite images in ml/demo/ directory")
-    
-    print("\n✅ Pipeline ready for integration with backend and frontend!")
-    print("\nNext steps:")
-    print("  1. Person 2: Import api_analyze_image() in backend/app/api/")
-    print("  2. Person 3: Call backend endpoint from frontend")
-    print("  3. See results in web dashboard!")
-

@@ -54,7 +54,9 @@ try:
     
     # Classification test
     clf_result = classifier.predict(dummy_image)
-    print(f"   ✅ Classification: {clf_result['disaster_type']} ({clf_result['confidence']:.1%})")
+    conf = clf_result['confidence']
+    conf_str = f"{conf:.1%}" if conf is not None else "N/A"
+    print(f"   ✅ Classification: {clf_result['disaster_type']} ({conf_str})")
     
     # Segmentation test
     mask, seg_conf = segmenter.predict(dummy_image, threshold=0.5)
@@ -85,7 +87,9 @@ if demo_dir.exists():
             result = api_analyze_image(test_image)
             print(f"   ✅ API function successful")
             print(f"   ✅ Disaster detected: {result['classification']['disaster_type']}")
-            print(f"   ✅ Confidence: {result['classification']['confidence']:.1%}")
+            conf = result['classification']['confidence']
+            conf_str = f"{conf:.1%}" if conf is not None else "N/A"
+            print(f"   ✅ Confidence: {conf_str}")
         except Exception as e:
             print(f"   ⚠️  Could not test with file: {e}")
     else:

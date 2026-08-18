@@ -81,3 +81,8 @@ logs/
 # Media
 *.pem
 *.key
+*.pth
+ml/datasets/raw/
+ml/datasets/train/
+ml/datasets/val/
+ml/datasets/test/
