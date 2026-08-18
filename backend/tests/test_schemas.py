@@ -52,19 +52,24 @@ def test_invalid_affected_area():
 
 def test_valid_zone():
     data = {
-        "zone_id": "A",
-        "risk_score": 8.7,
-        "priority": "CRITICAL",
-        "affected_area_km2": 12.4,
-        "affected_buildings": 540,
-        "affected_roads": 9,
-        "critical_facilities": 2,
+        "zone_id": "Z001",
         "geometry": {
             "type": "Polygon",
             "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]]
-        }
+        },
+        "flood_severity": 0.85,
+        "building_exposure": 0.70,
+        "road_disruption": 0.40,
+        "critical_facility_exposure": 0.50,
+        "risk_score": 7.1,
+        "priority": "VERY_HIGH",
+        "affected_buildings": 12,
+        "affected_road_length_km": 3.5,
+        "affected_facilities": 2,
     }
     zone = RiskZone(**data)
-    assert zone.zone_id == "A"
-    assert zone.priority == "CRITICAL"
+    assert zone.zone_id == "Z001"
+    assert zone.priority == "VERY_HIGH"
     assert zone.geometry.type == "Polygon"
+    assert zone.flood_severity == 0.85
+    assert zone.risk_score == 7.1
