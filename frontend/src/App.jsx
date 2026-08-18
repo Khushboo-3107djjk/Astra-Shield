@@ -1,17 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import MissionControl from './pages/MissionControl';
 import Analyze from './pages/Analyze';
 
-/**
- * App.jsx - Main React app entry point
- * TODO: Add React Router for page navigation
- */
-
 function App() {
+  const [page, setPage] = useState('landing'); // 'landing' or 'analysis'
+
   return (
-    <div className="App">
-      <MissionControl />
-      {/* <Analyze /> */}
+    <div className="app">
+      {page === 'landing' ? (
+        <MissionControl onStartAnalysis={() => setPage('analysis')} />
+      ) : (
+        <Analyze onBackToHome={() => setPage('landing')} />
+      )}
     </div>
   );
 }

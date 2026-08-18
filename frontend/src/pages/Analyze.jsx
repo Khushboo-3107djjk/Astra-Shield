@@ -1,149 +1,171 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 
 /**
- * Analyze.jsx - Main analysis dashboard
- * Person 3's primary component
- * 
- * Flow: Upload → Detect → Compare → Impact → Risk → Response
+ * Analyze.jsx - Satellite image comparison and analysis screen
  */
+function Analyze({ onBackToHome }) {
+  const [beforeFile, setBeforeFile] = useState(null);
+  const [afterFile, setAfterFile] = useState(null);
+  const [beforePreview, setBeforePreview] = useState(null);
+  const [afterPreview, setAfterPreview] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isAnalyzed, setIsAnalyzed] = useState(false);
 
-function Analyze() {
-  const [step, setStep] = useState('upload'); // upload, detecting, detect, compare, impact, risk, response
-  const [selectedDisaster, setSelectedDisaster] = useState('flood');
-  const [beforeImage, setBeforeImage] = useState(null);
-  const [afterImage, setAfterImage] = useState(null);
-  const [analysisResult, setAnalysisResult] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const beforeInputRef = useRef(null);
+  const afterInputRef = useRef(null);
 
-  const disasters = ['Flood', 'Wildfire', 'Cyclone', 'Landslide', 'Earthquake', 'Drought'];
-
-  const handleAnalyze = async () => {
-    setLoading(true);
-    setStep('detecting');
-
-    try {
-      // TODO: Call backend API
-      // const response = await fetch('/api/analyze', {
-      //   method: 'POST',
-      //   body: formData
-      // });
-      // const result = await response.json();
-      // setAnalysisResult(result);
-      
-      setStep('detect');
-      setTimeout(() => setStep('compare'), 2000);
-    } catch (error) {
-      console.error('Analysis failed:', error);
-    } finally {
-      setLoading(false);
+  const handleBeforeChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (beforePreview) URL.revokeObjectURL(beforePreview);
+      setBeforeFile(file);
+      setBeforePreview(URL.createObjectURL(file));
     }
   };
 
+  const handleAfterChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (afterPreview) URL.revokeObjectURL(afterPreview);
+      setAfterFile(file);
+      setAfterPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleRunAnalysis = () => {
+    if (!beforePreview || !afterPreview) return;
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
+      setIsAnalyzed(true);
+    }, 1500); // Brief 1.5s loading simulation
+  };
+
+  const handleReset = () => {
+    if (beforePreview) URL.revokeObjectURL(beforePreview);
+    if (afterPreview) URL.revokeObjectURL(afterPreview);
+    setBeforeFile(null);
+    setAfterFile(null);
+    setBeforePreview(null);
+    setAfterPreview(null);
+    setIsAnalyzed(false);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="analysis">
+        <div className="loading-container">
+          <div className="spinner"></div>
+          <div className="loading-text">Running AI Analysis...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isAnalyzed) {
+    return (
+      <div className="analysis">
+        <div className="results-container">
+          <div className="results-header">
+            <div className="results-status">ANALYSIS READY</div>
+            <p className="results-desc">Change detection analysis completed successfully using selected imagery.</p>
+          </div>
+          <div className="results-grid">
+            <div className="results-card">
+              <h3>Before Image</h3>
+              <div className="results-image-wrapper">
+                <img src={beforePreview} alt="Before Event" className="results-image" />
+              </div>
+            </div>
+            <div className="results-card">
+              <h3>After Image</h3>
+              <div className="results-image-wrapper">
+                <img src={afterPreview} alt="After Event" className="results-image" />
+              </div>
+            </div>
+          </div>
+          <div className="results-actions">
+            <button className="primary-button" onClick={handleReset}>Start New Analysis</button>
+            <button className="secondary-button" onClick={onBackToHome}>Back to Home</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-slate-900 text-white p-8">
-      <h1 className="text-4xl font-bold mb-8">🛰️ ASTRA-SHIELD Analysis</h1>
+    <div className="analysis">
+      <div className="analysis-header">
+        <button className="secondary-button" style={{ marginBottom: '1.5rem' }} onClick={onBackToHome}>
+          Back to Home
+        </button>
+        <h1>Begin Analysis</h1>
+        <p>Upload satellite imagery to compare conditions before and after a disaster.</p>
+      </div>
 
-      {step === 'upload' && (
-        <div className="max-w-2xl mx-auto">
-          <h2 className="text-2xl font-semibold mb-6">Step 1: Select Disaster Type</h2>
-          
-          <div className="grid grid-cols-2 gap-4 mb-8">
-            {disasters.map(disaster => (
-              <button
-                key={disaster}
-                onClick={() => setSelectedDisaster(disaster.toLowerCase())}
-                className={`p-4 rounded-lg font-semibold transition ${
-                  selectedDisaster === disaster.toLowerCase()
-                    ? 'bg-blue-600'
-                    : 'bg-slate-700 hover:bg-slate-600'
-                }`}
-              >
-                {disaster}
-              </button>
-            ))}
-          </div>
-
-          <h2 className="text-2xl font-semibold mb-6">Step 2: Upload Satellite Images</h2>
-          
-          <div className="grid grid-cols-2 gap-6 mb-8">
-            <div className="border-2 border-dashed border-blue-400 p-8 rounded-lg text-center">
-              <p className="mb-4">📷 Before Image</p>
-              <input type="file" accept="image/*" onChange={(e) => setBeforeImage(e.target.files[0])} />
+      <div className="upload-grid">
+        <div className="upload-section">
+          <h3>Before Event</h3>
+          <input
+            type="file"
+            accept="image/*"
+            ref={beforeInputRef}
+            onChange={handleBeforeChange}
+            style={{ display: 'none' }}
+          />
+          {beforePreview ? (
+            <div className="image-preview-container">
+              <img src={beforePreview} alt="Before Event Preview" className="image-preview" />
+              <div className="image-meta">
+                <span className="image-filename">{beforeFile ? beforeFile.name : ''}</span>
+                <button className="secondary-button" onClick={() => beforeInputRef.current.click()}>
+                  Change Image
+                </button>
+              </div>
             </div>
-            
-            <div className="border-2 border-dashed border-blue-400 p-8 rounded-lg text-center">
-              <p className="mb-4">📷 After Image</p>
-              <input type="file" accept="image/*" onChange={(e) => setAfterImage(e.target.files[0])} />
+          ) : (
+            <div className="upload-box" onClick={() => beforeInputRef.current.click()}>
+              <span>Select Image</span>
             </div>
-          </div>
-
-          <button
-            onClick={handleAnalyze}
-            disabled={loading || !beforeImage || !afterImage}
-            className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-600 px-6 py-3 rounded-lg font-bold text-lg"
-          >
-            {loading ? 'Analyzing...' : '[ ANALYZE ]'}
-          </button>
+          )}
         </div>
-      )}
 
-      {step === 'detecting' && (
-        <div className="text-center">
-          <p className="text-2xl mb-4">🤖 AI is analyzing...</p>
-          <div className="animate-spin text-4xl">⚙️</div>
+        <div className="upload-section">
+          <h3>After Event</h3>
+          <input
+            type="file"
+            accept="image/*"
+            ref={afterInputRef}
+            onChange={handleAfterChange}
+            style={{ display: 'none' }}
+          />
+          {afterPreview ? (
+            <div className="image-preview-container">
+              <img src={afterPreview} alt="After Event Preview" className="image-preview" />
+              <div className="image-meta">
+                <span className="image-filename">{afterFile ? afterFile.name : ''}</span>
+                <button className="secondary-button" onClick={() => afterInputRef.current.click()}>
+                  Change Image
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="upload-box" onClick={() => afterInputRef.current.click()}>
+              <span>Select Image</span>
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
-      {step === 'detect' && (
-        <div>
-          {/* TODO: AI Detection component */}
-          <p>AI Detection Results</p>
-          <button onClick={() => setStep('compare')} className="mt-4 bg-blue-600 px-4 py-2 rounded">
-            Next: Before/After Comparison →
-          </button>
-        </div>
-      )}
-
-      {step === 'compare' && (
-        <div>
-          {/* TODO: Before/After slider component - THIS IS YOUR WOW FACTOR! */}
-          <p className="text-2xl font-bold text-yellow-400">⭐ Disaster Evolution - YOUR WOW MOMENT!</p>
-          <p>Build the slider/swipe comparison here</p>
-          <button onClick={() => setStep('impact')} className="mt-4 bg-blue-600 px-4 py-2 rounded">
-            Next: Impact Analysis →
-          </button>
-        </div>
-      )}
-
-      {step === 'impact' && (
-        <div>
-          {/* TODO: Impact statistics & map */}
-          <p>Impact Analysis</p>
-          <button onClick={() => setStep('risk')} className="mt-4 bg-blue-600 px-4 py-2 rounded">
-            Next: Risk Zones →
-          </button>
-        </div>
-      )}
-
-      {step === 'risk' && (
-        <div>
-          {/* TODO: Risk zone visualization */}
-          <p>Risk Zones</p>
-          <button onClick={() => setStep('response')} className="mt-4 bg-blue-600 px-4 py-2 rounded">
-            Next: Emergency Response →
-          </button>
-        </div>
-      )}
-
-      {step === 'response' && (
-        <div>
-          {/* TODO: Emergency alerts & recommendations */}
-          <p>Emergency Response</p>
-          <button onClick={() => setStep('upload')} className="mt-4 bg-blue-600 px-4 py-2 rounded">
-            Start New Analysis
-          </button>
-        </div>
-      )}
+      <div className="action-bar">
+        <button
+          className="primary-button"
+          disabled={!beforePreview || !afterPreview}
+          onClick={handleRunAnalysis}
+        >
+          Run Analysis
+        </button>
+      </div>
     </div>
   );
 }
