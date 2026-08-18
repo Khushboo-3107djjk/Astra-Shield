@@ -6,6 +6,7 @@ from app.schemas.geometry import GeoJSONGeometry
 from app.services.geo_service import process_flood_mask
 from app.services.building_service import analyze_building_impact
 from app.services.road_service import analyze_road_impact
+from app.services.infrastructure_service import analyze_infrastructure_impact
 
 router = APIRouter()
 
@@ -93,3 +94,45 @@ def analyze_roads(request: RoadAnalysisRequest):
     flood_geom = shape(request.flood_geometry)
     result = analyze_road_impact(flood_geom, request.flood_crs, request.roads_path)
     return RoadAnalysisResponse(**result)
+
+
+class InfrastructureAnalysisRequest(BaseModel):
+    flood_geometry: dict = Field(..., description="Flood polygon GeoJSON geometry")
+    flood_crs: str = Field(..., description="CRS of the flood geometry")
+    facilities_path: str = Field(..., description="Path to the critical facilities GeoJSON file")
+
+
+class FacilityTypeStat(BaseModel):
+    total: int
+    affected: int
+
+
+class AffectedFacilityDetail(BaseModel):
+    facility_id: str
+    facility_name: str
+    facility_type: str
+    geometry: GeoJSONGeometry
+
+
+class InfrastructureAnalysisResponse(BaseModel):
+    total_facilities: int
+    affected_facilities: int
+    affected_percentage: float
+    affected_facility_ids: List[str]
+    facility_type_summary: Dict[str, FacilityTypeStat]
+    affected_facility_details: List[AffectedFacilityDetail]
+
+
+@router.post(
+    "/analyze-infrastructure",
+    response_model=InfrastructureAnalysisResponse,
+    summary="Development Test Endpoint for Critical Infrastructure Impact",
+    description=(
+        "Development endpoint to identify which critical facilities (hospitals, schools, emergency) "
+        "are potentially affected by a flood. Spatial overlap does NOT imply structural damage."
+    )
+)
+def analyze_infrastructure(request: InfrastructureAnalysisRequest):
+    flood_geom = shape(request.flood_geometry)
+    result = analyze_infrastructure_impact(flood_geom, request.flood_crs, request.facilities_path)
+    return InfrastructureAnalysisResponse(**result)

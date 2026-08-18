@@ -129,3 +129,48 @@ Notes:
 
 NEXT PART:
 Critical infrastructure impact analysis — hospitals, schools, emergency facilities, and other critical facilities.
+
+==================================================
+PART 4C — CRITICAL INFRASTRUCTURE IMPACT ANALYSIS
+Status: COMPLETED
+
+Implemented:
+- Synthetic critical facility GeoJSON dataset
+- Hospital facilities
+- School facilities
+- Emergency facilities
+- Critical infrastructure geospatial service
+- Facility/flood CRS compatibility handling
+- Potentially affected facility detection
+- Affected facility count
+- Affected facility percentage
+- Affected facility IDs
+- Facility-type statistics (hospitals, schools, emergency)
+- Affected facility GeoJSON Point geometries
+- Development endpoint: POST /api/geospatial/analyze-infrastructure
+- Infrastructure unit tests
+
+Definition:
+A facility is considered potentially affected when its geometry
+intersects the detected flood polygon.
+
+Important:
+Spatial overlap does NOT establish structural damage or destruction.
+Results represent potential spatial exposure only.
+
+Tests:
+- 12 tests passed.
+
+Notes:
+- Synthetic facility data is test-only.
+- Real critical-facility data will be integrated later.
+- Results represent potential spatial exposure, not confirmed damage.
+- Point geometry type added to GeoJSONGeometry schema.
+
+==================================================
+
+NEXT PART:
+Risk engine — combine flood severity, building exposure,
+road disruption, and critical infrastructure exposure into
+an explainable risk score.
+

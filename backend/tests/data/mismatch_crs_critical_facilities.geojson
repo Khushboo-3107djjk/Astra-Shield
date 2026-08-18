@@ -1,0 +1,13 @@
+{
+"type": "FeatureCollection",
+"name": "mismatch_crs_critical_facilities",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:EPSG::3857" } },
+"features": [
+{ "type": "Feature", "properties": { "facility_id": "H_IN", "facility_name": "City General Hospital", "facility_type": "hospital" }, "geometry": { "type": "Point", "coordinates": [ 1118760.882472399622202, 6437621.220336207188666 ] } },
+{ "type": "Feature", "properties": { "facility_id": "H_OUT", "facility_name": "Riverside Hospital", "facility_type": "hospital" }, "geometry": { "type": "Point", "coordinates": [ 1124326.857012063032016, 6428975.579877882264555 ] } },
+{ "type": "Feature", "properties": { "facility_id": "S_IN", "facility_name": "Central Primary School", "facility_type": "school" }, "geometry": { "type": "Point", "coordinates": [ 1117647.687564466614276, 6435891.374634047970176 ] } },
+{ "type": "Feature", "properties": { "facility_id": "S_OUT", "facility_name": "North Valley School", "facility_type": "school" }, "geometry": { "type": "Point", "coordinates": [ 1126553.246827928349376, 6425519.832511859945953 ] } },
+{ "type": "Feature", "properties": { "facility_id": "E_IN", "facility_name": "Fire Station Alpha", "facility_type": "emergency" }, "geometry": { "type": "Point", "coordinates": [ 1119874.077380332164466, 6439351.42524697445333 ] } },
+{ "type": "Feature", "properties": { "facility_id": "E_OUT", "facility_name": "Police Post West", "facility_type": "emergency" }, "geometry": { "type": "Point", "coordinates": [ 1122100.467196197481826, 6430703.990762050263584 ] } }
+]
+}

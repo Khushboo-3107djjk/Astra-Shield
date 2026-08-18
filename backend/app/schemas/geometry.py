@@ -7,6 +7,7 @@ class GeometryType(str, Enum):
     MULTIPOLYGON = "MultiPolygon"
     LINESTRING = "LineString"
     MULTILINESTRING = "MultiLineString"
+    POINT = "Point"
 
 class GeoJSONGeometry(BaseModel):
     """
