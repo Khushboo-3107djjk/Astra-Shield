@@ -65,5 +65,32 @@ Notes:
 * Mask values: It is assumed that pixels with a value of `1` represent flood, and all other values (like `0`) represent background/non-flood.
 * Synthetic raster: The raster created is explicitly a tiny 10x10 test fixture containing 16 flood pixels, only used for testing the geospatial processing engine pipeline and not for production fake responses.
 
+==================================================
+PART 4A — BUILDING IMPACT ANALYSIS
+Status: COMPLETED
+
+Implemented:
+* Building GeoJSON test dataset
+* Building geospatial service
+* Flood/building CRS compatibility handling
+* Building intersection analysis
+* Affected building count
+* Affected building percentage
+* Affected building IDs
+* Affected building GeoJSON geometries
+* Development endpoint
+* Building unit tests
+
+Definition:
+A building is considered affected when its geometry intersects
+the flood polygon.
+
+Tests:
+* Record the actual number of tests passed: 9 tests passed.
+
+Notes:
+* Synthetic building data is test-only.
+* Real infrastructure data will be integrated later.
+
 NEXT PART:
-Infrastructure impact analysis — affected buildings, roads, and critical facilities.
+Road impact analysis — affected road segments and road disruption statistics.
