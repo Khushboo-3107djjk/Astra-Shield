@@ -1,35 +1,38 @@
-# Backend
-## FastAPI Server for ASTRA-SHIELD
+# ASTRA-SHIELD Backend
 
-This is the server-side application handling:
-- API endpoints for image analysis
-- Geospatial impact calculation
-- Risk zone prioritization
-- Emergency response recommendations
+This is the FastAPI backend foundation for the ASTRA-SHIELD satellite disaster monitoring system.
+Currently, this is a clean foundation focusing on the core structure before adding ML/Geospatial services.
 
-### Structure
-```
-app/
-├── api/                    # Route handlers
-├── models/                 # Database models
-├── services/               # Business logic
-│   ├── ai_service.py       # ML model integration
-│   ├── geo_service.py      # Geospatial analysis
-│   ├── impact_service.py   # Infrastructure impact
-│   ├── risk_service.py     # Risk assessment
-│   └── response_service.py # Response generation
-├── schemas/                # Pydantic models
-└── utils/                  # Helpers
+## Development Setup
+
+### 1. Create a virtual environment
+```bash
+python -m venv venv
+# On Windows:
+venv\Scripts\activate
+# On Linux/macOS:
+source venv/bin/activate
 ```
 
-### Setup
+### 2. Install requirements
 ```bash
 pip install -r requirements.txt
-python -m uvicorn app.main:app --reload
 ```
 
-### API Endpoints
-- `POST /api/analyze` — Analyze satellite images
-- `GET /api/results/{id}` — Get analysis results
-- `POST /api/impact` — Calculate impact metrics
-- `GET /api/zones/{disaster_type}` — Get risk zones
+### 3. Start the FastAPI server
+```bash
+uvicorn app.main:app --reload --port 8000
+```
+
+### 4. API Documentation
+Swagger UI documentation is available at: [http://localhost:8000/docs](http://localhost:8000/docs)
+
+### Available Endpoints
+- `GET /` — API Status
+- `GET /api/health` — Health check endpoint
+
+### Testing
+To run the tests:
+```bash
+pytest
+```

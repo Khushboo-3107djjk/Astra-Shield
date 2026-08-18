@@ -4,6 +4,8 @@ Main FastAPI Application
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from app.api.routes import health
+from app.api.errors import APIError, api_error_handler
 
 app = FastAPI(
     title="ASTRA-SHIELD API",
@@ -11,15 +13,17 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# Exception handlers
+app.add_exception_handler(APIError, api_error_handler)
+
 # CORS Configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:3000", "http://localhost:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 @app.get("/")
 def read_root():
@@ -29,14 +33,4 @@ def read_root():
         "status": "online"
     }
 
-
-@app.get("/health")
-def health_check():
-    return {"status": "healthy"}
-
-
-# TODO: Add API routes
-# from app.api import analysis, impact, response
-# app.include_router(analysis.router)
-# app.include_router(impact.router)
-# app.include_router(response.router)
+app.include_router(health.router, prefix="/api")
